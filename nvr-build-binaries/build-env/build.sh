@@ -22,6 +22,8 @@ if [ ! -f "bin/dropbear" ]; then (
     # dropbear
     [ -d dropbear ] || git clone --depth=1 https://github.com/mkj/dropbear.git
     cd dropbear
+    # patch to allow custom user shells
+    sed -i -e "s/setusershell()/goto goodshell/g" svr-auth.c
     # build
     ./configure --host=arm --enable-static --disable-zlib
     make -j8
