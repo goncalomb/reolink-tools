@@ -18,6 +18,18 @@ if [ ! -f "bin/strace" ]; then (
     cp -at ../bin src/strace
 ) fi
 
+if [ ! -f "bin/ip" ]; then (
+    # iproute2
+    [ -d iproute2 ] || git clone --depth=1 https://github.com/shemminger/iproute2.git
+    cd iproute2
+    # build
+    export LDFLAGS="-static"
+    ./configure
+    make -j8
+    # copy binaries
+    cp -at ../bin ip/ip bridge/bridge
+) fi
+
 if [ ! -f "bin/dropbear" ]; then (
     # dropbear
     [ -d dropbear ] || git clone --depth=1 https://github.com/mkj/dropbear.git

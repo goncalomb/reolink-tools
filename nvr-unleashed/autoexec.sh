@@ -13,8 +13,9 @@ beep() {
 echo "[nvr-unleashed] hello"
 
 # copy binaries
-mkdir -p "$UNLEASHED_LOCATION/bin"
-cp -a bin/* "$UNLEASHED_LOCATION/bin"
+mkdir -p "$UNLEASHED_LOCATION"
+cp -a bin "$UNLEASHED_LOCATION"
+cp -a modules "$UNLEASHED_LOCATION"
 chmod +x "$UNLEASHED_LOCATION/bin"/*
 
 # change directory early to release the usb device and allow unmounting
@@ -68,6 +69,13 @@ cp /mnt/usb/dropbear_rsa_host_key .
 # start dropbear
 echo "[nvr-unleashed] starting dropbear"
 dropbear -BE -r dropbear_rsa_host_key
+
+# prepare modules
+cp -r "/lib/modules/$(uname -r)/extra" .
+mv extra modules_extra
+mv modules modules_extra/unleashed
+mount -o bind modules_extra "/lib/modules/$(uname -r)/extra"
+depmod
 
 # beep
 beep ; beep
