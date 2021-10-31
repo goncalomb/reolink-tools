@@ -12,8 +12,11 @@ beep() {
 
 echo "[nvr-unleashed] hello"
 
-# copy binaries
+# create unleashed dir
 mkdir -p "$UNLEASHED_LOCATION"
+mount -t tmpfs -o size=64M tmpfs "$UNLEASHED_LOCATION"
+
+# copy binaries
 cp -a bin "$UNLEASHED_LOCATION"
 cp -a modules "$UNLEASHED_LOCATION"
 chmod +x "$UNLEASHED_LOCATION/bin"/*
