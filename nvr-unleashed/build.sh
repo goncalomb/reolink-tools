@@ -7,6 +7,7 @@ mkdir -p build build/bin build/modules
 
 # copy from src
 cp -a src/autoexec.sh build/
+cp -at build/bin/ src/bin/*
 
 # build binaries and modules
 build_env() {

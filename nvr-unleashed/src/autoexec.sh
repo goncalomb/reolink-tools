@@ -80,17 +80,6 @@ mv modules modules_extra/unleashed
 mount -o bind modules_extra "/lib/modules/$(uname -r)/extra"
 depmod
 
-# bridge interfaces
-# if modprobe bridge 2>/dev/null; then
-( (
-    ip link add name br0 type bridge
-    ip link set br0 up
-    ip link set eth0 master br0
-    ip link set eth1 master br0
-    ip addr flush eth1
-)&)
-#fi
-
 # beep
 beep ; beep
 
