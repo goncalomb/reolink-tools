@@ -21,6 +21,9 @@ cp -a bin "$UNLEASHED_LOCATION"
 cp -a modules "$UNLEASHED_LOCATION"
 chmod +x "$UNLEASHED_LOCATION/bin"/*
 
+# dump kernel config (.config)
+cp /proc/config.gz config.gz
+
 # change directory early to release the usb device and allow unmounting
 cd "$UNLEASHED_LOCATION"
 

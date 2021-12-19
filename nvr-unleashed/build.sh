@@ -16,7 +16,12 @@ build_env() {
 }
 
 build_env bin
-build_env modules
+if [ -f env-modules/config.gz ]; then
+    build_env modules
+else
+    echo
+    echo "config.gz not found (will not compile modules)"
+fi
 
 echo
 echo "all binaries and modules"
