@@ -7,7 +7,7 @@ mkdir -p bin
 
 if [ ! -f "bin/strace" ]; then (
     # strace
-    [ -d strace ] || git clone --depth=1 https://github.com/strace/strace.git
+    git clone --depth=1 https://github.com/strace/strace.git
     cd strace
     # build
     export LDFLAGS="-static"
@@ -20,7 +20,7 @@ if [ ! -f "bin/strace" ]; then (
 
 if [ ! -f "bin/nmap" ]; then (
     # nmap
-    [ -d nmap ] || git clone --depth=1 https://github.com/nmap/nmap.git
+    git clone --depth=1 https://github.com/nmap/nmap.git
     cd nmap
     # build
     export LDFLAGS="-static"
@@ -39,7 +39,7 @@ if [ ! -f "bin/arp-scan" ]; then (
         make -j8
     )
     # arp-scan
-    [ -d arp-scan ] || git clone --depth=1 https://github.com/royhills/arp-scan.git
+    git clone --depth=1 https://github.com/royhills/arp-scan.git
     cd arp-scan
     # build
     export CFLAGS="-I/work/libpcap"
@@ -53,8 +53,9 @@ if [ ! -f "bin/arp-scan" ]; then (
 
 if [ ! -f "bin/ip" ]; then (
     # iproute2
-    [ -d iproute2 ] || git clone --depth=1 https://github.com/shemminger/iproute2.git
+    git clone https://github.com/shemminger/iproute2.git
     cd iproute2
+    git checkout 047e9ae516b5427158c0653f15c9c20d3965e4e5 # XXX: lock version, newer versions fail, fix this
     # build
     export LDFLAGS="-static"
     ./configure
@@ -65,7 +66,7 @@ if [ ! -f "bin/ip" ]; then (
 
 if [ ! -f "bin/dropbear" ]; then (
     # dropbear
-    [ -d dropbear ] || git clone --depth=1 https://github.com/mkj/dropbear.git
+    git clone --depth=1 https://github.com/mkj/dropbear.git
     cd dropbear
     # patch to allow custom user shells
     sed -i -e "s/setusershell()/goto goodshell/g" svr-auth.c
