@@ -25,7 +25,9 @@ Model | Hardware | UART
 RLN8-410 | H3MB18 | ?
 RLN8-410 | N2MB02 | ?
 RLN8-410 | N3MB01 | ?
+RLN8-410-E | H3MB16 | yes
 RLN16-410 | H3MB18 | yes
+
 
 ### Firmware
 
