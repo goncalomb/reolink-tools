@@ -1,0 +1,18 @@
+[submodule "nvr-unleashed/env-bin/lib/strace"]
+	path = nvr-unleashed/env-bin/lib/strace
+	url = ../../strace/strace.git
+[submodule "nvr-unleashed/env-bin/lib/nmap"]
+	path = nvr-unleashed/env-bin/lib/nmap
+	url = ../../nmap/nmap.git
+[submodule "nvr-unleashed/env-bin/lib/libpcap"]
+	path = nvr-unleashed/env-bin/lib/libpcap
+	url = ../../the-tcpdump-group/libpcap.git
+[submodule "nvr-unleashed/env-bin/lib/arp-scan"]
+	path = nvr-unleashed/env-bin/lib/arp-scan
+	url = ../../royhills/arp-scan.git
+[submodule "nvr-unleashed/env-bin/lib/iproute2"]
+	path = nvr-unleashed/env-bin/lib/iproute2
+	url = ../../shemminger/iproute2.git
+[submodule "nvr-unleashed/env-bin/lib/dropbear"]
+	path = nvr-unleashed/env-bin/lib/dropbear
+	url = ../../mkj/dropbear.git
