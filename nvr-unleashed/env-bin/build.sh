@@ -71,6 +71,17 @@ if [ ! -f "bin/dropbear" ]; then (
     cp -at ../../bin dropbear dropbearkey scp
 ) fi
 
+if [ ! -f "bin/rsync" ]; then (
+    # rsync
+    cd lib/rsync
+    # build
+    export LDFLAGS="-static"
+    ./configure --host=arm --disable-md2man --disable-openssl --disable-xxhash --disable-zstd --disable-lz4
+    make -j8
+    # copy binaries
+    cp -at ../../bin rsync
+) fi
+
 echo
 echo "result"
 echo

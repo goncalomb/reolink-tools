@@ -16,3 +16,6 @@
 [submodule "nvr-unleashed/env-bin/lib/dropbear"]
 	path = nvr-unleashed/env-bin/lib/dropbear
 	url = ../../mkj/dropbear.git
+[submodule "nvr-unleashed/env-bin/lib/rsync"]
+	path = nvr-unleashed/env-bin/lib/rsync
+	url = ../../WayneD/rsync.git
