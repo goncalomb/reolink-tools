@@ -6,10 +6,9 @@ cd -- "$(dirname -- "$0")"
 mkdir -p modules
 
 if [ -z "$(ls -A modules)" ]; then (
-    # clone kernel source
-    git clone --depth=1 --branch=v4.9.44 git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git
     cd linux-stable
 
+    # use kernel config
     zcat ../config.gz > .config
 
     # tweak config to enable some modules

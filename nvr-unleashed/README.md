@@ -1,6 +1,14 @@
 # nvr-unleashed
 
-**This is currently a work-in-progress that completely disables the security of the NVR (SSH server with root access without password, fun). For now, use for exploration only.**
+**This is currently a work-in-progress that completely disables the security of the NVR (SSH server with root access without password, fun). For now, use it for exploration only. Anything can change.**
+
+Static binaries (see [./env-bin](./env-bin)): `strace`, `nmap`, `arp-scan`, `ip`, `dropbear` and `rsync`.
+
+Kernel modules (see [./env-modules](./env-modules)): `bridge`.
+
+Entrypoint: [./src/autoexec.sh](./src/autoexec.sh).
+
+Extra scripts: [./src/bin](./src/bin).
 
 ## Building and Running
 
@@ -8,20 +16,36 @@ Requirements: Docker, GNU/Linux environment.
 
 Docker containers are used to build the static binaries and kernel modules.
 
-Run `./build.sh`, this builds the static binaries required to run nvr-unleashed. The first run is not a full build (no kernel modules).
+### First Build (partial)
+
+Run `./build.sh`, this builds the static binaries. The first run is not a full build (no kernel modules).
 
 Copy the contents of `./build` to a USB flash drive (important: MBR, FAT32, first partition).
 
-Reboot the NVR, if everything goes right, after a few seconds you should hear the short beep, signaling that nvr-unleashed is loading, followed by two beeps when it finishes loading (the first run can take some extra time, <1 min).
+Reboot the NVR, if everything goes right, after a few seconds you should hear a short beep, signaling that nvr-unleashed is loading, a second beep after a few seconds, followed by two beeps when it finishes loading (the first run can take some extra time, <1 min).
 
 You should now have SSH access to the NVR (root without password):
 
     ssh root@your_nvr_ip
 
+### Full Build
+
 For creating a full build you should now fetch the kernel config from the NVR and save it to `./env-modules/config.gz`.
 
-For convenience, you can just power off the nvr and check the contents of the drive, you will find a `config.gz` file, copy it to `./env-modules/config.gz`.
+> Versions 2.X.X of the Reolink firmware don't appear to use a kernel build with built in configuration. See #1. This should be addressed in the future.
 
-Alternatively you could use ssh to fetch `/proc/config.gz`.
+Fetching the configuration can be done just by running:
 
-You can now re-run the build `./build.sh` (will include the kernel modules), copy the files to the drive, and reboot.
+    ./ssh-fetch-kernel-config.sh your_nvr_ip
+
+Alternatively, you can power off the NVR and check the contents of the drive, you will find a `config.gz` file, and copy it to `./env-modules/config.gz`.
+
+You can now re-run the build `./build.sh` (it will include the kernel modules), copy the files to the drive, and reboot.
+
+## Continuous Development
+
+For easy development/testing, you can use the `./ssh-push.sh` script to push the local build directory to the NVR and re-run the `autoexec.sh`. This works after attaining SSH access with the first manual build.
+
+After some local changes, testing is as easy as:
+
+    ./build.sh && ./ssh-push.sh your_nvr_ip
