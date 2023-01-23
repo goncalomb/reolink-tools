@@ -36,7 +36,7 @@ For creating a full build you should now fetch the kernel config from the NVR an
 
 Fetching the configuration can be done just by running:
 
-    ./ssh-fetch-kernel-config.sh your_nvr_ip
+    ./ssh-fetch-ikconfig.sh your_nvr_ip
 
 Alternatively, you can power off the NVR and check the contents of the drive, you will find a `config.gz` file, and copy it to `./env-modules/config.gz`.
 

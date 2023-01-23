@@ -1,5 +1,23 @@
 #!/bin/sh
 
+# this is the entrypoint for nvr-unleashed, it runs on the nvr during boot
+
+# it is made to be idempotent, you can run it multiple times (even after boot)
+# to re-copy the binaries and modules form the usb drive, without side effects
+# this can be useful during development/testing over ssh (no need to reboot)
+# but it does not teardown/remount the entire nvr-unleashed, so a full reboot
+# is still necessary specially if testing any changes to this file
+
+# during boot the buzzer should beep a total of 4 times
+# beep... ... beep... ... beep beep... (2 beeps at the end)
+
+# can be called with a argument 'attached' to speed up the process (no sleep
+# or detached subshell), it beeps only twice, this can be used after boot
+
+# during boot it is called with no arguments and the detached subshell is
+# required to let the boot process of the nvr continue while nvr-unleashed
+# is initializing
+
 set -e
 cd -- "$(dirname -- "$0")"
 
@@ -22,7 +40,7 @@ is_mount_point() {
 echo "[nvr-unleashed] hello"
 
 # beep
-beep
+[ "$1" != "attached" ] && beep
 
 # create unleashed dir
 if ! is_mount_point "$UNLEASHED_LOCATION"; then
@@ -32,13 +50,21 @@ else
     echo "[nvr-unleashed] '$UNLEASHED_LOCATION' already exists"
 fi
 
-# copy binaries
+# copy binaries and modules
 echo "[nvr-unleashed] copying binaries"
-cp -a bin "$UNLEASHED_LOCATION"
-cp -a modules "$UNLEASHED_LOCATION"
+if command -v rsync >/dev/null; then
+    # use rsync if available for incremental copy
+    # this should only happen if 'autoexec.sh' is run after boot,
+    # the firmware does not include rsync
+    rsync -a bin "$UNLEASHED_LOCATION"
+    rsync -a modules "$UNLEASHED_LOCATION"
+else
+    cp -a bin "$UNLEASHED_LOCATION"
+    cp -a modules "$UNLEASHED_LOCATION"
+fi
 chmod +x "$UNLEASHED_LOCATION/bin"/*
 
-# dump kernel config (.config)
+# dump ikconfig (in-kernel config)
 if [ -f "/proc/config.gz" ]; then
     cp /proc/config.gz config.gz
 else
@@ -62,7 +88,7 @@ if [ "$1" != "attached" ]; then
 fi
 
 # beep
-beep
+[ "$1" != "attached" ] && beep
 
 # mount usb
 if ! is_mount_point /mnt/usb ; then
@@ -117,19 +143,25 @@ if [ ! -f dropbear_rsa_host_key ]; then
 fi
 
 # prepare modules
-# we inject the kernel modules by hijacking the 'extra' directory using a
-# bind mount to a new directory with the extra modules
-if [ ! -d modules_extra ]; then
-    echo "[nvr-unleashed] injecting kernel modules"
-    cp -r "/lib/modules/$(uname -r)/extra" .
-    mv extra modules_extra
-    mv modules modules_extra/unleashed
-    mount -o bind modules_extra "/lib/modules/$(uname -r)/extra"
+# we inject the kernel modules by hijacking a directory under '/lib/modules/'
+# using a bind mount to a new directory with our modules
+INJECTION_POINT="/lib/modules/$(uname -r)/kernel" # alternative to .../extra
+if ! is_mount_point "$INJECTION_POINT"; then
+    if [ -z "$(ls -A "$INJECTION_POINT")" ]; then
+        # injection point is empty, just mount
+        echo "[nvr-unleashed] injecting kernel modules"
+        mount -o bind modules "$INJECTION_POINT"
+    else
+        # injection point contains other kernel modules, copy and mount
+        echo "[nvr-unleashed] injecting kernel modules, with bypass"
+        cp -a "$INJECTION_POINT" modules_injection
+        mkdir -p modules_injection/unleashed
+        mount -o bind modules_injection "$INJECTION_POINT"
+        mount -o bind modules "$INJECTION_POINT/unleashed"
+    fi
     depmod
-elif [ -d modules ]; then
+else
     echo "[nvr-unleashed] reloading kernel modules"
-    rm -rf modules_extra/unleashed
-    mv modules modules_extra/unleashed
     depmod
 fi
 
