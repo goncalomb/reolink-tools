@@ -115,24 +115,11 @@ if ! is_mount_point /etc/passwd ; then
 fi
 
 # set path
-export PATH="$UNLEASHED_LOCATION/bin:$PATH"
+case ":$PATH:" in
+    *":$UNLEASHED_LOCATION/bin:"*) ;;
+    *) export PATH="$UNLEASHED_LOCATION/bin:$PATH"
+esac
 echo "PATH="$UNLEASHED_LOCATION/bin:\$PATH"" >/root/.profile
-
-# replace root shell with a bash script that populates the PATH
-# this is necessary for scp to work because it uses a non-login shell
-cat >"$UNLEASHED_LOCATION/sh" <<EOF
-#!/bin/sh
-export PATH="$UNLEASHED_LOCATION/bin:\$PATH"
-# detect if stdin is a tty, if that's the case, start login shell
-# this is not entirely correct but apparently we can't detect the '-' on the
-# zeroth argument of the script (login shell)
-# TODO: this should probably be replaced by a small c program
-L=-l
-[ -t 0 ] || L=
-exec /bin/sh \$L "\$@"
-EOF
-chmod +x "$UNLEASHED_LOCATION/sh"
-echo "root::0:0:root:/root:$UNLEASHED_LOCATION/sh" >"$UNLEASHED_LOCATION/passwd"
 
 # generate dropbear key
 if [ ! -f /mnt/usb/dropbear_rsa_host_key ]; then

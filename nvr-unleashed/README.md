@@ -49,3 +49,21 @@ For easy development/testing, you can use the `./ssh-push.sh` script to push the
 After some local changes, testing is as easy as:
 
     ./build.sh && ./ssh-push.sh your_nvr_ip
+
+## Patches
+
+If necessary, patches can be created to modify the functionality of the binaries ([./env-bin/lib](./env-bin/lib)). Use the provided `./env-bin/patches.sh` script to manage the patches.
+
+* `patches.sh apply`: apply current patches locally
+* `patches.sh update`: save local changes (uncommitted changes) as patches (.patch files)
+* `patches.sh restore`: restore local changes (discard uncommitted changes)
+
+**Patches are automatically applied during the build (inside the Docker container).** The build will fail if the patches are applied locally and not restored before running the build.
+
+The process to create/modify patches is: apply current patches, make necessary changes, update the patches, restore, and then build.
+
+### Current Patches
+
+[dropbear.patch](./env-bin/lib-patches/dropbear.patch):
+
+* preserve PATH from host to client session to allow our custom bin location to be available even on non-login shells

@@ -5,6 +5,9 @@ cd -- "$(dirname -- "$0")"
 
 mkdir -p bin
 
+# apply patches
+./patches.sh apply
+
 if [ ! -f "bin/strace" ]; then (
     # strace
     cd lib/strace
@@ -61,8 +64,6 @@ if [ ! -f "bin/ip" ]; then (
 if [ ! -f "bin/dropbear" ]; then (
     # dropbear
     cd lib/dropbear
-    # patch to allow custom user shells
-    sed -i -e "s/setusershell()/goto goodshell/g" svr-auth.c
     # build
     ./configure --host=arm --enable-static --disable-zlib
     make -j8

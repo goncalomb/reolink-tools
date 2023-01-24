@@ -1,0 +1,26 @@
+diff --git a/svr-chansession.c b/svr-chansession.c
+index 656a968..2c3b352 100644
+--- a/svr-chansession.c
++++ b/svr-chansession.c
+@@ -952,2 +952,3 @@ static void execchild(const void *user_data) {
+ 	char *envcp = getenv("LANG");
++	char *rootpath = NULL;
+ 	if (envcp != NULL) {
+@@ -955,2 +956,7 @@ static void execchild(const void *user_data) {
+ 	}
++	/* preserve PATH as well */
++	rootpath = getenv("PATH");
++	if (rootpath != NULL) {
++		rootpath = m_strdup(rootpath);
++	}
+ 
+@@ -1015,3 +1021,8 @@ static void execchild(const void *user_data) {
+ 	if (getuid() == 0) {
+-		addnewvar("PATH", DEFAULT_ROOT_PATH);
++		if (rootpath != NULL) {
++			addnewvar("PATH", rootpath);
++			m_free(rootpath);
++		} else {
++			addnewvar("PATH", DEFAULT_ROOT_PATH);
++		}
+ 	} else {
