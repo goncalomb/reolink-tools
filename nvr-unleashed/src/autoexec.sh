@@ -8,8 +8,8 @@
 # but it does not teardown/remount the entire nvr-unleashed, so a full reboot
 # is still necessary specially if testing any changes to this file
 
-# during boot the buzzer should beep a total of 4 times
-# beep... ... beep... ... beep beep... (2 beeps at the end)
+# during boot the buzzer should beep a total of 3 times
+# beep... beep beep... (2 beeps at the end)
 
 # can be called with a argument 'attached' to speed up the process (no sleep
 # or detached subshell), it beeps only twice, this can be used after boot
@@ -19,7 +19,6 @@
 # is initializing
 
 set -e
-cd -- "$(dirname -- "$0")"
 
 UNLEASHED_LOCATION="/mnt/tmp/nvr-unleashed"
 
@@ -39,40 +38,8 @@ is_mount_point() {
 
 echo "[nvr-unleashed] hello"
 
-# beep
-[ "$1" != "attached" ] && beep
-
-# create unleashed dir
-if ! is_mount_point "$UNLEASHED_LOCATION"; then
-    mkdir -p "$UNLEASHED_LOCATION"
-    mount -t tmpfs -o size=64M tmpfs "$UNLEASHED_LOCATION"
-else
-    echo "[nvr-unleashed] '$UNLEASHED_LOCATION' already exists"
-fi
-
-# copy binaries and modules
-echo "[nvr-unleashed] copying binaries"
-if command -v rsync >/dev/null; then
-    # use rsync if available for incremental copy
-    # this should only happen if 'autoexec.sh' is run after boot,
-    # the firmware does not include rsync
-    rsync -a bin "$UNLEASHED_LOCATION"
-    rsync -a modules "$UNLEASHED_LOCATION"
-else
-    cp -a bin "$UNLEASHED_LOCATION"
-    cp -a modules "$UNLEASHED_LOCATION"
-fi
-chmod +x "$UNLEASHED_LOCATION/bin"/*
-
-# dump ikconfig (in-kernel config)
-if [ -f "/proc/config.gz" ]; then
-    cp /proc/config.gz config.gz
-else
-    echo "[nvr-unleashed] '/proc/config.gz' kernel config not found"
-fi
-
-# change directory early to release the usb device and allow unmounting
-cd "$UNLEASHED_LOCATION"
+# right now the boot sequence is still in the beginning, even the gpio is
+# not configured correctly so we can't even beep, we need to detach and wait
 
 # start detached subshell to continue later
 ( (
@@ -90,13 +57,51 @@ fi
 # beep
 [ "$1" != "attached" ] && beep
 
-# mount usb
+# remount usb
 if ! is_mount_point /mnt/usb ; then
     echo "[nvr-unleashed] remounting"
     mount -t vfat /dev/usb/usbhd1 /mnt/usb
 else
-    echo "[nvr-unleashed] already mounted"
+    echo "[nvr-unleashed] '/mnt/usb' already mounted"
 fi
+
+# change directory late to avoid locking the usb device and prevent unmounting
+cd -- "$(dirname -- "$0")"
+
+# create unleashed dir
+if ! is_mount_point "$UNLEASHED_LOCATION"; then
+    mkdir -p "$UNLEASHED_LOCATION"
+    mount -t tmpfs -o size=64M tmpfs "$UNLEASHED_LOCATION"
+else
+    echo "[nvr-unleashed] '$UNLEASHED_LOCATION' already exists"
+fi
+
+# copy binaries and kernel modules
+echo "[nvr-unleashed] copying binaries and kernel modules"
+if command -v rsync >/dev/null; then
+    # use rsync if available for incremental copy
+    # this should only happen if 'autoexec.sh' is run after boot,
+    # the firmware does not include rsync
+    # using '--inplace' because memory is limited (tmpfs)
+    # fail back to cp, 'rsync --inplace' will fail to replace itself if
+    # pushing a new rsync binary
+    rsync -a --inplace bin "$UNLEASHED_LOCATION" || cp -a bin "$UNLEASHED_LOCATION"
+    rsync -a --inplace modules "$UNLEASHED_LOCATION" || cp -a modules "$UNLEASHED_LOCATION"
+else
+    cp -a bin "$UNLEASHED_LOCATION"
+    cp -a modules "$UNLEASHED_LOCATION"
+fi
+chmod +x "$UNLEASHED_LOCATION/bin"/*
+
+# dump ikconfig (in-kernel config)
+if [ -f "/proc/config.gz" ]; then
+    cp /proc/config.gz config.gz
+else
+    echo "[nvr-unleashed] '/proc/config.gz' kernel config not found"
+fi
+
+# change directory
+cd "$UNLEASHED_LOCATION"
 
 # mount root tmpfs
 if ! is_mount_point /root ; then
