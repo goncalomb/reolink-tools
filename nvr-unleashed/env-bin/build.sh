@@ -5,7 +5,15 @@ cd -- "$(dirname -- "$0")"
 
 mkdir -p bin
 
-# apply patches
+echo "building local binaries"
+
+find src/go -name *.go | while IFS= read -r ENTRY; do
+    echo "building $ENTRY"
+    GOOS=linux GOARCH=$ARCH go build -o bin "$ENTRY"
+done
+
+echo "building other binaries"
+
 ./patches.sh apply
 
 if [ ! -f "bin/strace" ]; then (
